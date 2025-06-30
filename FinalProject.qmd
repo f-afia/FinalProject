@@ -1,0 +1,153 @@
+---
+title: "Final Project: Coral Reef Health Analysis"
+format: html
+author: Faith Adade, Josh Wufsus
+date: now
+editor: visual
+toc: TRUE
+---
+
+## Introduction
+
+Our work examines the changes in the Great Barrier Reef over the span over 50 years. In addition, we are looking at water composition and major pollutants that have likely affected the health of coral reefs. By creating visualizations and averaging our data, we will be able identify which variables have strong correlations with the damages of our major coral reef systems. We will first use the NOAA dataset to examine how coral health has changed over time. This can be determined by plotting coral calcification and density levels over time. The data contains samples of 10 different coral reefs in the Great Barrier Reef.
+
+In this project, we are exploring these research questions:
+
+1.  How has the health of coral reefs changed over the timespan of 1950-2000?
+2.  How do ocean pH levels correlate with coral reef health?
+3.  How do surface temperatures correlate with coral reef health?
+
+### Provenance
+
+### Primary Dataset
+
+The second dataset is from Kaggle. This source gives us information regarding ocean acidification (pH levels). pH level is one of the most important factors of water characterization so it would be reasonable to suspect that a change in water pH levels could correlate with overall health and biodiversity of marine ecosystems. This table also includes information regarding co2 emissions which can be used in conjunct with our final source to paint a complete picture of global temperatures.
+
+### Secondary Dataset
+
+Our final dataset is sourced from Wikipedia and covers global surface temperature. This dataset was derived from data presented by the IPCC (Intergovernmental Panel on Climate Change). This dataset is relevant because we suspect global warming/climate change to be a contributing factor of coral health. Quantifying the change in temperature compared to change in coral health can help determine how important water temperature is. Data is collected through global land instruments, naval instruments on boats and buoys, and satellites.
+
+### Calcification, Extension, Density
+
+```{r Figure1, fig.width=8, fig.height=3}
+#| echo: false
+#| message: false
+#importing necessary packages
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+library(rvest)
+r1 <-read.csv("Desktop/project/ribreef3b.csv")
+r2 <-read.csv("Desktop/project/ribreef3a.csv")
+r3 <-read.csv("Desktop/project/ribreef.csv")
+r4 <-read.csv("Desktop/project/sweetlip2a.csv")
+r5 <-read.csv("Desktop/project/sweetlip1b.csv")
+r6 <-read.csv("Desktop/project/ribreef3b.csv")
+r7 <-read.csv("Desktop/project/kelso2a.csv")
+r8 <-read.csv("Desktop/project/kelso2b.csv")
+r9 <-read.csv("Desktop/project/sweetlip1a.csv")
+r10 <-read.csv("Desktop/project/abrah1h.csv")
+coral_files <- rbind(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10)
+
+
+coral_avg <- coral_files %>%
+  group_by(Year) %>%
+  #Transformation
+  summarise(
+    Avg_Calc = mean(Calc, na.rm = TRUE),
+    Avg_Den = mean(Den, na.rm = TRUE),
+    Avg_Ext = mean(Ext, na.rm = TRUE)
+  )
+p1<- ggplot(coral_avg, aes(x = Year, y = Avg_Calc )) +
+  geom_smooth() +
+  labs(title = "Average Coral Reef Calcification", y = "Average Value",caption = "Figure 1")
+p2<-ggplot(coral_avg, aes(x = Year, y = Avg_Ext)) +
+  geom_smooth(color = "red") +
+  labs(title = "Average Coral Reef Extension", y = "Average Value",caption = "Figure 2")
+p3<- ggplot(coral_avg, aes(x = Year, y = Avg_Den)) +
+  geom_smooth(color = "blueviolet") +
+  labs(title = "Average Coral Reef Density ", y = "Average Value",caption = "Figure 3")
+grid.arrange(p1, p2,p3, ncol = 3)
+```
+
+In our analysis, we plotted three major indicative factors of coral reef health; calcification, density, and extension. As seen in figures 1, 2, and 3, all three factors experienced a steady decrease until the late 70's, where a sharp increase for about ten years. Proceeding this increase, all three rates declined drastically, past their original rates in 1955. Amongst all three indicators, the density of the coral has experienced the greatest loss.
+
+```{r}
+#| echo: false
+t <- read.csv("Desktop/project/oceanacc.csv")
+#Reduction
+t_updated <- t %>%
+  filter(year >= 1955 & year <= 2000)
+ggplot(t_updated, aes(x = year, y = Ocean_acidification.in_PH.,color = Ocean_acidification.in_PH.)) +
+  geom_point() +
+  labs(title = "Ocean Acidification",
+       x = "Year", y = "PH level",caption = "Figure 4")
+
+```
+
+```{r,}
+#| echo: false
+library(dplyr)
+ac <- t %>%
+  select(year, Ocean_acidification.in_PH.)
+coral_files_rename <- coral_files %>%
+  rename(year = Year)
+coral_files_wa <- coral_files_rename %>%
+  full_join(ac,by = "year")
+abrev <- head(coral_files_wa)
+kable(abrev, caption = "Coral Data with Acidification (Figure 5)")
+```
+
+In figure 4 and 5, we examined the trend in ocean acidification. As shown, the acidification of the ocean increased steadily after 1960. Much like the coral health indicators, there was a brief period of increase, before a sharp incline after 1990.
+
+```{r}
+#| echo: false
+
+scraper <- function(URL, tableNo){
+  tables <- URL %>%
+  read_html() %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+ 
+  out <- tables[[tableNo]]
+ 
+  return(out)
+}
+
+temptable <- scraper("https://en.wikipedia.org/wiki/Global_surface_temperature", 2)
+yeartables <- temptable[8:12, ]
+
+kable(yeartables, caption = "Global Surface Temperature (Figure 6)")
+
+```
+
+Finally, we looked at the trends in global surface temperature. The ocean represents over 70% of our surface temperature, and the increasing temperatures are one of the biggest threats to coral reef health. As presented in figure 6, the temperature of the ocean has been increasing steadily from 1955-2000 and continues to increase.
+
+### Conclusion
+
+Our EDA showed a strong decay in coral reef health since 1950. This is supported by Figure 1 , 2, and 3, which shows three important factors of coral reef health all in decline from 1950-2000. We then examined potential causes to this over the same time period. Our analysis shows that ph levels dropped over the same span of time that coral reef health declined. The water temperature also steadily climbed since 1950.
+
+While we noticed a high water temperature and low pH correlated with poor coral health, additional experimentation beyond the scope of this report would be required to prove causation. Assuming water temperature and pH are causing the changes in coral reef health, scientific evidence suggests carbon emissions are to blame. By reducing our carbon footprint, we can bring the pH of sea water back up to normal levels and decrease global surface temperatures, thus restoring normal water conditions required for healthy marine ecosystems.
+
+### Citation
+
+Calcification:
+
+Cohen, A. (2017) Calcification rates of Porites corals collected from a naturally high-Ωar reef and a naturally low-Ωar reef in Palau incubated at three experimental Ωar conditions. Biological and Chemical Oceanography Data Management Office (BCO-DMO). (Version 1) Version Date 2017-06-26 \[if applicable, indicate subset used\]. doi:10.1575/1912/bco-dmo.706075.1 \[access date\]\
+\
+Acidification:\
+\
+JAYASURYA DS. (2024). Global Ocean Acidification Trends and Impacts \[Data set\]. Kaggle. [https://doi.org/10.34740/KAGGLE/DSV/9848700](https://nam10.safelinks.protection.outlook.com/?url=https%3A%2F%2Fdoi.org%2F10.34740%2FKAGGLE%2FDSV%2F9848700&data=05%7C02%7Cfaa5393%40psu.edu%7C2a3e7df5c98d494c17ec08ddb80dbeae%7C7cf48d453ddb4389a9c1c115526eb52e%7C0%7C0%7C638869091342147132%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=MlWCkJ0%2BRxIAcTzmnTifUS0NFR3P4DD7tg6jkAtiqUg%3D&reserved=0)
+
+ 
+
+Temperature
+
+“Global Surface Temperature.” Wikipedia, 4 Aug. 2021, [en.wikipedia.org/wiki/Global_surface_temperature](http://en.wikipedia.org/wiki/Global_surface_temperature).
+
+## Code Appendix
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
