@@ -1,2 +1,1 @@
-# checkpoint3
-checkpoint stuff
+This report examines the change of coral reef health from 1950-2000. We determined coral reef health by using three metrics: calcification, extension, and density. Next, we examined how ocean water temperature and pH levels correlated with coral reef health. We found that coral reef health decayed over the given time span which correlated with higher water temperatures and lower pH levels. All code written according to BOAST style.
