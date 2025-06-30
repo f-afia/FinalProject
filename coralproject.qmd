@@ -1,0 +1,112 @@
+---
+title: "Final Project"
+format: html
+author: Faith Adade, Josh Wufsus
+date: now
+editor: visual
+---
+
+## Introduction
+
+Our work examines the changes in the Great Barrier Reef over the span over 50 years. In addition, we are looking at water composition and major pollutants that have likely affected the health of coral reefs. By creating visualizations and averaging our data, we will be able identify which variables have strong correlations with the damages of our major coral reef systems. We will first use the NOAA dataset to examine how coral health has changed over time. This can be determined by plotting coral calcification and density levels over time. The data contains samples of 10 different coral reefs in the Great Barrier Reef.
+
+In this project, we are exploring these research questions:
+
+1.  ...
+2.  ...
+3.  ...
+
+## Provenance
+
+....
+
+## Primary Dataset
+
+.....
+
+## Secondary Dataset 
+
+...
+
+### Calcification, Extension, Density
+
+```{r, fig.width=8, fig.height=3}
+#| echo: false
+#| message: false
+#importing necessary packages
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(gridExtra)
+library(knitr)
+library(rvest)
+r1 <-read.csv("Desktop/project/ribreef3b.csv")
+r2 <-read.csv("Desktop/project/ribreef3a.csv")
+r3 <-read.csv("Desktop/project/ribreef.csv")
+r4 <-read.csv("Desktop/project/sweetlip2a.csv")
+r5 <-read.csv("Desktop/project/sweetlip1b.csv")
+r6 <-read.csv("Desktop/project/ribreef3b.csv")
+r7 <-read.csv("Desktop/project/kelso2a.csv")
+r8 <-read.csv("Desktop/project/kelso2b.csv")
+r9 <-read.csv("Desktop/project/sweetlip1a.csv")
+r10 <-read.csv("Desktop/project/abrah1h.csv")
+coral_files <- rbind(r1,r2,r3,r4,r5,r6,r7,r8,r9,r10)
+
+
+coral_avg <- coral_files %>%
+  group_by(Year) %>%
+  #Transformation
+  summarise(
+    Avg_Calc = mean(Calc, na.rm = TRUE),
+    Avg_Den = mean(Den, na.rm = TRUE),
+    Avg_Ext = mean(Ext, na.rm = TRUE)
+  )
+p1<- ggplot(coral_avg, aes(x = Year, y = Avg_Calc )) +
+  geom_smooth() +
+  labs(title = "Average Coral Reef Calcification", y = "Average Value")
+p2<-ggplot(coral_avg, aes(x = Year, y = Avg_Ext)) +
+  geom_smooth(color = "red") +
+  labs(title = "Average Coral Reef Extension", y = "Average Value")
+p3<- ggplot(coral_avg, aes(x = Year, y = Avg_Den)) +
+  geom_smooth(color = "blueviolet") +
+  labs(title = "Average Coral Reef Density ", y = "Average Value")
+grid.arrange(p1, p2,p3, ncol = 3)
+```
+
+### 
+
+```{}
+```
+
+```{r}
+#| echo: false
+t <- read.csv("Desktop/project/oceanacc.csv")
+#Reduction
+t_updated <- t %>%
+  filter(year >= 1955 & year <= 2000)
+ggplot(t_updated, aes(x = year, y = Ocean_acidification.in_PH.,color = Ocean_acidification.in_PH.)) +
+  geom_point() +
+  labs(title = "Ocean Acidification",
+       x = "Year", y = "PH level")
+```
+
+```{r}
+#| echo: false
+URL <- "https://en.wikipedia.org/wiki/Global_surface_temperature"
+
+tables <- URL %>%
+  read_html() %>%
+  html_nodes(css = "table") %>%
+  html_table(fill = TRUE)
+
+temptable <- tables[[2]]
+yeartables <- temptable[8:12, ]
+
+kable(yeartables, caption = "Global Surface Temperature")
+
+```
+
+![]()
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
